@@ -1,0 +1,11 @@
+ONS CLUBHUIS - gratis statische versie
+
+1. Voer eerst beveiliging.sql uit in Supabase SQL Editor (nieuwe query).
+2. Upload index.html naar de PRIVATE GitHub-repository.
+3. Publiceer de site via een gratis statische host die een private GitHub-repository ondersteunt, of upload het bestand via een andere gratis statische hostingdienst.
+4. Log in met je bestaande Supabase Authentication account.
+5. Karina kan later als gebruiker en clubhuis_members-lid worden toegevoegd.
+
+LET OP: De twee AI-personages zijn nog NIET actief. Gratis AI vereist een aparte provider en veilige serverfunctie. Geen AI-sleutels in index.html plaatsen.
+Deze versie gebruikt polling om de 4 seconden en heeft geen betaald abonnement nodig binnen de gratis gebruikslimieten.
+De publishable key is openbaar ontworpen. Geheimen en wachtwoorden horen niet in deze bestanden.
