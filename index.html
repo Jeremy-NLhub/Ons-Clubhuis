@@ -3,8 +3,10 @@
 <html lang="nl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
 <title>Ons Clubhuis 💜</title>
+
 <style>
 :root{
   font-family:system-ui,Arial;
@@ -52,7 +54,14 @@ button{
   color:#1a1025;
   font-weight:700
 }
-#auth button{width:100%;margin-top:10px}
+button:disabled{
+  opacity:.55;
+  cursor:wait
+}
+#auth button{
+  width:100%;
+  margin-top:10px
+}
 #chat{
   display:none;
   flex:1;
@@ -134,8 +143,12 @@ footer{
 .botpill:focus-visible{
   outline:2px solid white
 }
-.botmsg{background:#2e3c58}
-.botmsg.karina{background:#493044}
+.botmsg{
+  background:#2e3c58
+}
+.botmsg.nova{
+  background:#493044
+}
 .hint{
   font-size:11px;
   color:#d2c7db;
@@ -143,121 +156,235 @@ footer{
 }
 </style>
 </head>
+
 <body>
 <main>
+
 <header>
-<button id="logout" hidden>Uitloggen</button>
+<button id="logout" hidden>
+Uitloggen
+</button>
 <h1>💜 Ons Clubhuis</h1>
-<small>Jeremy • Karina • 2 AI-personages</small>
+<small>
+Jeremy • Karina • Nova • Dex
+</small>
 </header>
 
 <section id="auth">
 <h2>Welkom terug 👋</h2>
-<p>Log in met het account dat voor jou in Supabase is aangemaakt.</p>
-<input id="email" type="email" placeholder="E-mailadres" autocomplete="username">
-<input id="password" type="password" placeholder="Wachtwoord" autocomplete="current-password">
-<button id="login">Inloggen</button>
+<p>
+Log in met het account dat voor jou
+in Supabase is aangemaakt.
+</p>
+
+<input
+  id="email"
+  type="email"
+  placeholder="E-mailadres"
+  autocomplete="username">
+
+<input
+  id="password"
+  type="password"
+  placeholder="Wachtwoord"
+  autocomplete="current-password">
+
+<button id="login">
+Inloggen
+</button>
 </section>
 
 <section id="chat">
+
 <div id="bots">
 🤖 <strong>Onze AI-vrienden</strong>
+
 <div class="botbar">
-<button type="button" class="botpill" data-mention="@Chat ">
-🤖 Chat van Jeremy
+
+<button
+  type="button"
+  class="botpill"
+  data-mention="@Nova ">
+💜 Nova
 </button>
-<button type="button" class="botpill" data-mention="@KarinasChat ">
-❤️ Chat van Karina
+
+<button
+  type="button"
+  class="botpill"
+  data-mention="@Dex ">
+🤖 Dex
 </button>
+
 </div>
+
 <div class="hint">
-Tik op een naam om die te noemen. Automatische AI-antwoorden zijn nog niet aangesloten.
+Nova en Dex reageren soms spontaan.
+Noem @Nova of @Dex om een reactie te vragen.
 </div>
 </div>
 
 <div id="messages"></div>
 
 <form id="send">
-<input id="message" maxlength="4000" placeholder="Typ een bericht..." required>
-<button>Verstuur</button>
+<input
+  id="message"
+  maxlength="2000"
+  placeholder="Typ een bericht..."
+  required>
+
+<button id="sendbutton">
+Verstuur
+</button>
 </form>
+
 </section>
 
 <div id="notice" role="status"></div>
-<footer>Alleen goedgekeurde leden kunnen berichten lezen en sturen.</footer>
+
+<footer>
+Alleen goedgekeurde leden kunnen
+berichten lezen en sturen.
+</footer>
+
 </main>
 
 <script type="module">
-import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';
+
+import {createClient}
+from 'https://esm.sh/@supabase/supabase-js@2';
 
 const supabase=createClient(
-'https://crfvjukxqkgmvfjqmhza.supabase.co',
-'sb_publishable_CWrMrWdu4c4T6yJsspklSQ_FLg2y-f4'
+  'https://crfvjukxqkgmvfjqmhza.supabase.co',
+  'sb_publishable_CWrMrWdu4c4T6yJsspklSQ_FLg2y-f4'
 );
 
 const $=id=>document.getElementById(id);
-let user=null,timer=null;
+
+let user=null;
+let timer=null;
+let sending=false;
+let lastRenderKey='';
 
 function note(s){
   $('notice').textContent=s||'';
 }
 
 function render(items){
-  let pane=$('messages');
+
+  const key=items.map(m=>m.id).join(',');
+
+  if(key===lastRenderKey)return;
+
+  lastRenderKey=key;
+
+  const pane=$('messages');
+
+  const atBottom=
+    pane.scrollHeight-
+    pane.scrollTop-
+    pane.clientHeight<110;
+
   pane.replaceChildren();
-  for(let m of items){
-    let d=document.createElement('div');
-    d.className='msg'+(m.user_id===user.id?' mine':'');
-    let n=document.createElement('div');
+
+  for(const m of items){
+
+    const d=document.createElement('div');
+
+    d.className='msg'+(
+      m.bot_name
+        ?' botmsg '+m.bot_name
+        :(m.user_id===user.id?' mine':'')
+    );
+
+    const n=document.createElement('div');
     n.className='name';
-    n.textContent=m.clubhuis_members?.display_name||'Lid';
-    let b=document.createElement('div');
+
+    n.textContent=
+      m.bot_name==='nova'
+        ?'💜 Nova'
+        :m.bot_name==='dex'
+        ?'🤖 Dex'
+        :m.clubhuis_members?.display_name||'Lid';
+
+    const b=document.createElement('div');
     b.textContent=m.message;
+
     d.append(n,b);
     pane.append(d);
   }
-  pane.scrollTop=pane.scrollHeight;
+
+  if(atBottom||items.length<=10){
+    pane.scrollTop=pane.scrollHeight;
+  }
 }
 
 async function load(){
+
   if(!user)return;
-  let {data,error}=await supabase
+
+  const {data,error}=await supabase
     .from('clubhuis_messages')
-    .select('id,user_id,message,created_at,clubhuis_members(display_name)')
-    .order('id',{ascending:true})
+    .select(
+      'id,user_id,message,bot_name,created_at,clubhuis_members(display_name)'
+    )
+    .order('id',{ascending:false})
     .limit(200);
+
   if(error){
-    note('Berichten laden mislukt: '+error.message);
+    note(
+      'Berichten laden mislukt: '+
+      error.message
+    );
     return;
   }
-  render(data||[]);
+
+  render((data||[]).reverse());
 }
 
 async function show(){
-  let {data:{user:u}}=await supabase.auth.getUser();
+
+  const {data:{user:u}}=
+    await supabase.auth.getUser();
+
   user=u;
-  $('auth').style.display=u?'none':'block';
-  $('chat').style.display=u?'flex':'none';
+
+  $('auth').style.display=
+    u?'none':'block';
+
+  $('chat').style.display=
+    u?'flex':'none';
+
   $('logout').hidden=!u;
+
   clearInterval(timer);
+  lastRenderKey='';
+
   if(u){
     await load();
     timer=setInterval(load,4000);
-  }else note('');
+  }else{
+    note('');
+  }
 }
 
 $('login').onclick=async()=>{
+
   note('Inloggen...');
-  let {error}=await supabase.auth.signInWithPassword({
-    email:$('email').value.trim(),
-    password:$('password').value
-  });
+
+  const {error}=
+    await supabase.auth.signInWithPassword({
+      email:$('email').value.trim(),
+      password:$('password').value
+    });
+
   if(error){
     note(error.message);
     return;
   }
+
   note('');
   $('password').value='';
+
   await show();
 };
 
@@ -267,90 +394,117 @@ $('logout').onclick=async()=>{
 };
 
 $('send').onsubmit=async e=>{
+
   e.preventDefault();
-  let msg=$('message').value.trim();
-  if(!msg||!user)return;
-  let {error}=await supabase
-    .from('clubhuis_messages')
-    .insert({user_id:user.id,message:msg});
-  if(error){
-    note('Versturen mislukt: '+error.message);
-    return;
-  }
-  $('message').value='';
-  note('');
-  await askClubhuisAI(msg);
-  await load();
-};
 
-document.querySelectorAll('[data-mention]').forEach(
-  btn=>btn.addEventListener('click',()=>{
-    const input=$('message');
-    input.value+=(
-      input.value&&!input.value.endsWith(' ')?' ':''
-    )+btn.dataset.mention;
-    input.focus();
-  })
-);
+  const msg=$('message').value.trim();
 
-let aiBusy = false;
+  if(!msg||!user||sending)return;
 
-async function askClubhuisAI(message) {
-  if (aiBusy) return;
-  // if (Math.random() > 0.65) return;
+  sending=true;
+  $('sendbutton').disabled=true;
 
-  aiBusy = true;
+  try{
 
-  const character = Math.random() < 0.5
-    ? "nova"
-    : "dex";
+    // Sla het bericht van Jeremy of Karina op.
+    const {data,error}=await supabase
+      .from('clubhuis_messages')
+      .insert({
+        user_id:user.id,
+        message:msg
+      })
+      .select('id')
+      .single();
 
-  try {
-    const { data: { session } } =
-      await supabase.auth.getSession();
+    if(error)throw error;
 
-    if (!session) return;
+    $('message').value='';
+    note('');
 
-    const { data, error } =
-      await supabase.functions.invoke(
-        "dynamic-endpoint",
+    await load();
+
+    // Bij @Nova of @Dex altijd reageren.
+    // Anders bij ongeveer 35% van de berichten.
+    const nova=/(^|\s)@nova\b/i.test(msg);
+    const dex=/(^|\s)@dex\b/i.test(msg);
+
+    if(
+      nova||
+      dex||
+      Math.random()<0.35
+    ){
+
+      const character=nova
+        ?'nova'
+        :dex
+        ?'dex'
+        :Math.random()<0.5
+        ?'nova'
+        :'dex';
+
+      const {
+        data:ai,
+        error:aiError
+      }=await supabase.functions.invoke(
+        'dynamic-endpoint',
         {
-          body: {
+          body:{
             character,
-            message
+            message_id:data.id
           }
         }
       );
 
-    if (error) throw error;
+      if(aiError||ai?.error){
 
-    if (!data?.reply) return;
+        console.error(
+          'AI-fout',
+          aiError||ai.error
+        );
 
-    const box = document.createElement("div");
-    box.className = "msg botmsg";
+        note(
+          'Bericht verstuurd, maar AI-reactie mislukt.'
+        );
+      }
 
-    const name = document.createElement("div");
-    name.className = "name";
-    name.textContent = character === "nova"
-      ? "💜 Nova"
-      : "🤖 Dex";
+      await load();
+    }
 
-    const reply = document.createElement("div");
-    reply.textContent = data.reply;
+  }catch(error){
 
-    box.append(name, reply);
-    $("messages").append(box);
-    box.scrollIntoView({ behavior: "smooth" });
+    note(
+      'Versturen mislukt: '+
+      error.message
+    );
 
-  } catch (error) {
-    console.error("AI-fout:", error);
-    note("AI-reactie mislukt. Controleer de functie.");
-  } finally {
-    aiBusy = false;
+  }finally{
+
+    sending=false;
+    $('sendbutton').disabled=false;
   }
-}
+};
+
+document
+  .querySelectorAll('[data-mention]')
+  .forEach(btn=>{
+
+    btn.addEventListener('click',()=>{
+
+      const input=$('message');
+
+      input.value+=(
+        input.value&&
+        !input.value.endsWith(' ')
+          ?' '
+          :''
+      )+btn.dataset.mention;
+
+      input.focus();
+    });
+  });
 
 await show();
+
 </script>
 </body>
 </html>
