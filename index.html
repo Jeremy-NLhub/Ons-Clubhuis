@@ -143,12 +143,8 @@ footer{
 .botpill:focus-visible{
   outline:2px solid white
 }
-.botmsg{
-  background:#2e3c58
-}
-.botmsg.nova{
-  background:#493044
-}
+.botmsg{background:#2e3c58}
+.botmsg.nova{background:#493044}
 .hint{
   font-size:11px;
   color:#d2c7db;
@@ -173,8 +169,7 @@ Jeremy • Karina • Nova • Dex
 <section id="auth">
 <h2>Welkom terug 👋</h2>
 <p>
-Log in met het account dat voor jou
-in Supabase is aangemaakt.
+Log in met je Clubhuis-account.
 </p>
 
 <input
@@ -189,9 +184,7 @@ in Supabase is aangemaakt.
   placeholder="Wachtwoord"
   autocomplete="current-password">
 
-<button id="login">
-Inloggen
-</button>
+<button id="login">Inloggen</button>
 </section>
 
 <section id="chat">
@@ -218,8 +211,9 @@ Inloggen
 </div>
 
 <div class="hint">
-Nova en Dex reageren soms spontaan.
-Noem @Nova of @Dex om een reactie te vragen.
+Nova en Dex praten gezellig mee.
+Noem @Nova of @Dex voor een reactie.
+Soms plaagt de ander ook nog even terug. 😂
 </div>
 </div>
 
@@ -393,6 +387,33 @@ $('logout').onclick=async()=>{
   await show();
 };
 
+// Roep één AI aan.
+async function askAI(character,messageId,replyToBotId){
+
+  const body={
+    character,
+    message_id:messageId
+  };
+
+  if(replyToBotId){
+    body.reply_to_bot_id=replyToBotId;
+  }
+
+  const {data,error}=
+    await supabase.functions.invoke(
+      'dynamic-endpoint',
+      {body}
+    );
+
+  if(error)throw error;
+
+  if(data?.error){
+    throw new Error(data.error);
+  }
+
+  return data;
+}
+
 $('send').onsubmit=async e=>{
 
   e.preventDefault();
@@ -406,7 +427,6 @@ $('send').onsubmit=async e=>{
 
   try{
 
-    // Sla het bericht van Jeremy of Karina op.
     const {data,error}=await supabase
       .from('clubhuis_messages')
       .insert({
@@ -423,18 +443,17 @@ $('send').onsubmit=async e=>{
 
     await load();
 
-    // Bij @Nova of @Dex altijd reageren.
-    // Anders bij ongeveer 35% van de berichten.
     const nova=/(^|\s)@nova\b/i.test(msg);
     const dex=/(^|\s)@dex\b/i.test(msg);
 
-    if(
-      nova||
-      dex||
-      Math.random()<0.35
-    ){
+    // 75% spontane reacties.
+    // Een vermelding geeft altijd reactie.
+    const shouldReply=
+      nova||dex||Math.random()<0.75;
 
-      const character=nova
+    if(shouldReply){
+
+      const firstCharacter=nova
         ?'nova'
         :dex
         ?'dex'
@@ -442,24 +461,28 @@ $('send').onsubmit=async e=>{
         ?'nova'
         :'dex';
 
-      const {
-        data:ai,
-        error:aiError
-      }=await supabase.functions.invoke(
-        'dynamic-endpoint',
-        {
-          body:{
-            character,
-            message_id:data.id
-          }
-        }
-      );
+      const secondCharacter=
+        firstCharacter==='nova'
+          ?'dex'
+          :'nova';
 
-      if(aiError||ai?.error){
+      let firstReply=null;
+
+      try{
+
+        firstReply=await askAI(
+          firstCharacter,
+          data.id,
+          null
+        );
+
+        await load();
+
+      }catch(aiError){
 
         console.error(
-          'AI-fout',
-          aiError||ai.error
+          'Eerste AI-reactie:',
+          aiError
         );
 
         note(
@@ -467,7 +490,35 @@ $('send').onsubmit=async e=>{
         );
       }
 
-      await load();
+      // 25% kans dat de andere AI reageert.
+      // Nooit meer dan twee AI-antwoorden.
+      if(
+        firstReply?.id &&
+        Math.random()<0.25
+      ){
+
+        try{
+
+          await askAI(
+            secondCharacter,
+            data.id,
+            firstReply.id
+          );
+
+          await load();
+
+        }catch(aiError){
+
+          console.error(
+            'Tweede AI-reactie:',
+            aiError
+          );
+
+          note(
+            'De tweede AI-reactie is niet gelukt.'
+          );
+        }
+      }
     }
 
   }catch(error){
