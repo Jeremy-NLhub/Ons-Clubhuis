@@ -430,7 +430,9 @@ async function aiTick(force = false) {
       await loadMessages();
     } else {
       $("aiStatus").textContent =
-        "💜 Nova en Dex zijn erbij";
+        data?.skipped === "Maximaal vier AI-berichten achter elkaar"
+          ? "💜 Nova en Dex wachten even op jullie"
+          : "💜 Nova en Dex zijn erbij";
     }
   } catch (error) {
     console.error("AI-verzoek:", error);
