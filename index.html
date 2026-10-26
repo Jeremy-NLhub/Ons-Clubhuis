@@ -279,6 +279,7 @@ $('send').onsubmit=async e=>{
   }
   $('message').value='';
   note('');
+  await askClubhuisAI(msg);
   await load();
 };
 
@@ -291,6 +292,63 @@ document.querySelectorAll('[data-mention]').forEach(
     input.focus();
   })
 );
+
+let aiBusy = false;
+
+async function askClubhuisAI(message) {
+  if (aiBusy) return;
+  if (Math.random() > 0.65) return;
+
+  aiBusy = true;
+
+  const character = Math.random() < 0.5
+    ? "nova"
+    : "dex";
+
+  try {
+    const { data: { session } } =
+      await supabase.auth.getSession();
+
+    if (!session) return;
+
+    const { data, error } =
+      await supabase.functions.invoke(
+        "dynamic-endpoint",
+        {
+          body: {
+            character,
+            message
+          }
+        }
+      );
+
+    if (error) throw error;
+
+    if (!data?.reply) return;
+
+    const box = document.createElement("div");
+    box.className = "msg botmsg";
+
+    const name = document.createElement("div");
+    name.className = "name";
+    name.textContent = character === "nova"
+      ? "💜 Nova"
+      : "🤖 Dex";
+
+    const reply = document.createElement("div");
+    reply.textContent = data.reply;
+
+    box.append(name, reply);
+    $("messages").append(box);
+    box.scrollIntoView({ behavior: "smooth" });
+
+  } catch (error) {
+    console.error("AI-fout:", error);
+    note("AI-reactie mislukt. Controleer de functie.");
+  } finally {
+    aiBusy = false;
+  }
+}
 
 await show();
 </script>
