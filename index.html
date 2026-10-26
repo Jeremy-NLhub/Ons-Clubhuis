@@ -82,7 +82,8 @@ button:disabled{
   border-radius:16px;
   background:#382e45;
   align-self:flex-start;
-  overflow-wrap:anywhere
+  overflow-wrap:anywhere;
+  white-space:pre-wrap
 }
 .mine{
   align-self:flex-end;
@@ -140,9 +141,6 @@ footer{
   padding:8px 11px;
   font-size:12px
 }
-.botpill:focus-visible{
-  outline:2px solid white
-}
 .botmsg{background:#2e3c58}
 .botmsg.nova{background:#493044}
 .hint{
@@ -157,32 +155,22 @@ footer{
 <main>
 
 <header>
-<button id="logout" hidden>
-Uitloggen
-</button>
+<button id="logout" hidden>Uitloggen</button>
 <h1>💜 Ons Clubhuis</h1>
-<small>
-Jeremy • Karina • Nova • Dex
-</small>
+<small>Jeremy • Karina • Nova • Dex</small>
 </header>
 
 <section id="auth">
 <h2>Welkom terug 👋</h2>
-<p>
-Log in met je Clubhuis-account.
-</p>
+<p>Log in met je Clubhuis-account.</p>
 
-<input
-  id="email"
-  type="email"
-  placeholder="E-mailadres"
-  autocomplete="username">
+<input id="email" type="email"
+placeholder="E-mailadres"
+autocomplete="username">
 
-<input
-  id="password"
-  type="password"
-  placeholder="Wachtwoord"
-  autocomplete="current-password">
+<input id="password" type="password"
+placeholder="Wachtwoord"
+autocomplete="current-password">
 
 <button id="login">Inloggen</button>
 </section>
@@ -193,42 +181,29 @@ Log in met je Clubhuis-account.
 🤖 <strong>Onze AI-vrienden</strong>
 
 <div class="botbar">
-
-<button
-  type="button"
-  class="botpill"
-  data-mention="@Nova ">
+<button type="button"
+class="botpill" data-mention="@Nova ">
 💜 Nova
 </button>
 
-<button
-  type="button"
-  class="botpill"
-  data-mention="@Dex ">
+<button type="button"
+class="botpill" data-mention="@Dex ">
 🤖 Dex
 </button>
-
 </div>
 
 <div class="hint">
-Nova en Dex praten gezellig mee.
-Noem @Nova of @Dex voor een reactie.
-Soms plaagt de ander ook nog even terug. 😂
+Nova en Dex praten regelmatig mee
+en reageren soms op elkaar. 😂
 </div>
 </div>
 
 <div id="messages"></div>
 
 <form id="send">
-<input
-  id="message"
-  maxlength="2000"
-  placeholder="Typ een bericht..."
-  required>
-
-<button id="sendbutton">
-Verstuur
-</button>
+<input id="message" maxlength="2000"
+placeholder="Typ een bericht..." required>
+<button id="sendbutton">Verstuur</button>
 </form>
 
 </section>
@@ -243,7 +218,6 @@ berichten lezen en sturen.
 </main>
 
 <script type="module">
-
 import {createClient}
 from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -264,15 +238,11 @@ function note(s){
 }
 
 function render(items){
-
   const key=items.map(m=>m.id).join(',');
-
   if(key===lastRenderKey)return;
-
   lastRenderKey=key;
 
   const pane=$('messages');
-
   const atBottom=
     pane.scrollHeight-
     pane.scrollTop-
@@ -281,7 +251,6 @@ function render(items){
   pane.replaceChildren();
 
   for(const m of items){
-
     const d=document.createElement('div');
 
     d.className='msg'+(
@@ -313,7 +282,6 @@ function render(items){
 }
 
 async function load(){
-
   if(!user)return;
 
   const {data,error}=await supabase
@@ -325,10 +293,7 @@ async function load(){
     .limit(200);
 
   if(error){
-    note(
-      'Berichten laden mislukt: '+
-      error.message
-    );
+    note('Berichten laden mislukt: '+error.message);
     return;
   }
 
@@ -336,18 +301,13 @@ async function load(){
 }
 
 async function show(){
-
   const {data:{user:u}}=
     await supabase.auth.getUser();
 
   user=u;
 
-  $('auth').style.display=
-    u?'none':'block';
-
-  $('chat').style.display=
-    u?'flex':'none';
-
+  $('auth').style.display=u?'none':'block';
+  $('chat').style.display=u?'flex':'none';
   $('logout').hidden=!u;
 
   clearInterval(timer);
@@ -362,7 +322,6 @@ async function show(){
 }
 
 $('login').onclick=async()=>{
-
   note('Inloggen...');
 
   const {error}=
@@ -376,9 +335,8 @@ $('login').onclick=async()=>{
     return;
   }
 
-  note('');
   $('password').value='';
-
+  note('');
   await show();
 };
 
@@ -387,35 +345,85 @@ $('logout').onclick=async()=>{
   await show();
 };
 
-// Roep één AI aan.
-async function askAI(character,messageId,replyToBotId){
-
-  const body={
-    character,
-    message_id:messageId
-  };
-
-  if(replyToBotId){
-    body.reply_to_bot_id=replyToBotId;
-  }
-
+async function askAI(character,rootId,parentId){
   const {data,error}=
     await supabase.functions.invoke(
       'dynamic-endpoint',
-      {body}
+      {
+        body:{
+          character,
+          message_id:rootId,
+          parent_id:parentId
+        }
+      }
     );
 
   if(error)throw error;
-
-  if(data?.error){
-    throw new Error(data.error);
-  }
+  if(data?.error)throw new Error(data.error);
 
   return data;
 }
 
-$('send').onsubmit=async e=>{
+async function startConversation(messageId,msg){
 
+  const nova=/(^|\s)@nova\b/i.test(msg);
+  const dex=/(^|\s)@dex\b/i.test(msg);
+
+  // 90% kans op spontane AI-reactie.
+  if(!nova&&!dex&&Math.random()>=0.90){
+    return;
+  }
+
+  let character=nova
+    ?'nova'
+    :dex
+    ?'dex'
+    :Math.random()<0.5
+    ?'nova'
+    :'dex';
+
+  let parentId=messageId;
+
+  // Kans dat het gesprek doorgaat na
+  // respectievelijk 1, 2 en 3 AI-reacties.
+  const continueChance=[0.70,0.40,0.40];
+
+  for(let turn=0;turn<4;turn++){
+
+    let response;
+
+    try{
+      response=await askAI(
+        character,
+        messageId,
+        parentId
+      );
+    }catch(error){
+      console.error('AI-reactie:',error);
+      note('Een AI-reactie is niet gelukt.');
+      break;
+    }
+
+    if(!response?.id||response.skipped){
+      break;
+    }
+
+    await load();
+
+    parentId=response.id;
+
+    if(
+      turn===3 ||
+      Math.random()>=continueChance[turn]
+    ){
+      break;
+    }
+
+    character=character==='nova'?'dex':'nova';
+  }
+}
+
+$('send').onsubmit=async e=>{
   e.preventDefault();
 
   const msg=$('message').value.trim();
@@ -426,7 +434,6 @@ $('send').onsubmit=async e=>{
   $('sendbutton').disabled=true;
 
   try{
-
     const {data,error}=await supabase
       .from('clubhuis_messages')
       .insert({
@@ -440,96 +447,13 @@ $('send').onsubmit=async e=>{
 
     $('message').value='';
     note('');
-
     await load();
 
-    const nova=/(^|\s)@nova\b/i.test(msg);
-    const dex=/(^|\s)@dex\b/i.test(msg);
-
-    // 75% spontane reacties.
-    // Een vermelding geeft altijd reactie.
-    const shouldReply=
-      nova||dex||Math.random()<0.75;
-
-    if(shouldReply){
-
-      const firstCharacter=nova
-        ?'nova'
-        :dex
-        ?'dex'
-        :Math.random()<0.5
-        ?'nova'
-        :'dex';
-
-      const secondCharacter=
-        firstCharacter==='nova'
-          ?'dex'
-          :'nova';
-
-      let firstReply=null;
-
-      try{
-
-        firstReply=await askAI(
-          firstCharacter,
-          data.id,
-          null
-        );
-
-        await load();
-
-      }catch(aiError){
-
-        console.error(
-          'Eerste AI-reactie:',
-          aiError
-        );
-
-        note(
-          'Bericht verstuurd, maar AI-reactie mislukt.'
-        );
-      }
-
-      // 25% kans dat de andere AI reageert.
-      // Nooit meer dan twee AI-antwoorden.
-      if(
-        firstReply?.id &&
-        Math.random()<0.25
-      ){
-
-        try{
-
-          await askAI(
-            secondCharacter,
-            data.id,
-            firstReply.id
-          );
-
-          await load();
-
-        }catch(aiError){
-
-          console.error(
-            'Tweede AI-reactie:',
-            aiError
-          );
-
-          note(
-            'De tweede AI-reactie is niet gelukt.'
-          );
-        }
-      }
-    }
+    await startConversation(data.id,msg);
 
   }catch(error){
-
-    note(
-      'Versturen mislukt: '+
-      error.message
-    );
-
+    note('Versturen mislukt: '+error.message);
   }finally{
-
     sending=false;
     $('sendbutton').disabled=false;
   }
@@ -538,9 +462,7 @@ $('send').onsubmit=async e=>{
 document
   .querySelectorAll('[data-mention]')
   .forEach(btn=>{
-
     btn.addEventListener('click',()=>{
-
       const input=$('message');
 
       input.value+=(
@@ -555,7 +477,6 @@ document
   });
 
 await show();
-
 </script>
 </body>
 </html>
