@@ -1,482 +1,588 @@
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport"
-content="width=device-width,initial-scale=1">
-<title>Ons Clubhuis 💜</title>
+      content="width=device-width,initial-scale=1">
+<title>💜 Ons Clubhuis</title>
 
 <style>
-:root{
-  font-family:system-ui,Arial;
-  color:#f7f3ff;
-  background:#151120
-}
-*{box-sizing:border-box}
-body{margin:0}
-main{
-  max-width:760px;
-  margin:auto;
-  height:100dvh;
-  display:flex;
-  flex-direction:column
-}
-header{
-  background:#30243e;
-  padding:17px 20px
-}
-h1{font-size:23px;margin:0}
-small{color:#d2c7db}
-#auth{
-  margin:10vh auto;
-  padding:25px;
-  max-width:400px;
-  width:94%;
-  background:#30243e;
-  border-radius:18px
-}
-input,button{
-  font:inherit;
-  border-radius:10px;
-  padding:13px;
-  border:0
-}
-input{
-  width:100%;
-  margin:7px 0;
-  background:#fff;
-  color:#21182b
-}
-button{
-  cursor:pointer;
-  background:#a781e8;
-  color:#1a1025;
-  font-weight:700
-}
-button:disabled{
-  opacity:.55;
-  cursor:wait
-}
-#auth button{
-  width:100%;
-  margin-top:10px
-}
-#chat{
-  display:none;
-  flex:1;
-  min-height:0;
-  flex-direction:column
-}
-#messages{
-  overflow:auto;
-  flex:1;
-  padding:16px;
-  display:flex;
-  flex-direction:column;
-  gap:12px
-}
-.msg{
-  max-width:85%;
-  padding:12px 15px;
-  border-radius:16px;
-  background:#382e45;
-  align-self:flex-start;
-  overflow-wrap:anywhere;
-  white-space:pre-wrap
-}
-.mine{
-  align-self:flex-end;
-  background:#63458c
-}
-.name{
-  font-size:12px;
-  color:#e5c9ff;
-  margin-bottom:4px
-}
-form{
-  display:flex;
-  gap:8px;
-  padding:12px;
-  background:#30243e
-}
-form input{
+* { box-sizing:border-box; }
+
+body {
   margin:0;
-  flex:1;
-  min-width:0
+  background:#14101e;
+  color:#f8f2ff;
+  font-family:Arial,sans-serif;
 }
-#notice{
-  padding:8px 15px;
-  color:#ffcfaf;
+
+header {
+  background:#30213e;
+  padding:20px 16px;
+}
+
+.head {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+}
+
+h1 {
+  font-size:26px;
+  margin:0 0 5px;
+}
+
+.sub {
+  color:#cfc0dc;
+  font-size:14px;
+}
+
+button {
+  cursor:pointer;
+  border:0;
+  border-radius:13px;
+  padding:13px 16px;
+  font-size:16px;
+  font-weight:bold;
+}
+
+.logout {
+  background:#e9e6e9;
+  color:#21172d;
+  white-space:nowrap;
+}
+
+.friends {
+  padding:14px 16px;
+  background:#24192f;
+}
+
+.friends h3 {
+  margin:0 0 12px;
+  font-size:17px;
+  color:#d9c6e8;
+}
+
+.botbuttons {
+  display:flex;
+  gap:9px;
+}
+
+.botbuttons button {
+  border:1px solid #80609a;
+  border-radius:30px;
+  color:white;
+  background:#4b3564;
+  font-size:15px;
+}
+
+.hint {
+  color:#d3c4dd;
   font-size:13px;
-  min-height:28px
+  line-height:1.5;
+  margin-top:10px;
 }
-#logout{
-  float:right;
-  padding:7px 10px;
-  background:#ddd
+
+.status {
+  color:#c6a8f1;
+  font-size:12px;
+  margin-top:7px;
 }
-footer{
-  padding:5px 14px;
-  font-size:11px;
-  color:#bfb3cc
+
+.chat {
+  padding:14px 14px 130px;
+  height:calc(100dvh - 290px);
+  min-height:250px;
+  overflow-y:auto;
 }
-#bots{
-  padding:12px 15px;
-  color:#d2c7db;
+
+.message {
+  max-width:85%;
+  width:fit-content;
+  padding:13px 15px;
+  border-radius:19px;
+  margin-bottom:12px;
+  overflow-wrap:anywhere;
+  line-height:1.35;
+  font-size:16px;
+  white-space:pre-wrap;
+}
+
+.message.mine {
+  margin-left:auto;
+  background:#68458b;
+}
+
+.message.human {
+  background:#393043;
+}
+
+.message.nova {
+  background:#503347;
+}
+
+.message.dex {
+  background:#30405e;
+}
+
+.sender {
+  color:#dbc8e8;
   font-size:13px;
-  background:#211a2d
+  margin-bottom:5px;
 }
-.botbar{
+
+.composer {
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  background:#30213e;
+  padding:12px;
+  z-index:5;
+}
+
+.sendrow {
   display:flex;
   gap:8px;
-  flex-wrap:wrap;
-  margin-top:9px
 }
-.botpill{
-  background:#49345f;
-  color:#fff;
-  border:1px solid #765a95;
+
+input {
+  width:100%;
+  border:0;
+  border-radius:12px;
+  padding:13px;
+  font-size:16px;
+  outline:none;
+}
+
+.sendbutton {
+  background:#ad80e6;
+  color:#1d102a;
+}
+
+.sendbutton:disabled {
+  opacity:.6;
+}
+
+.error {
+  color:#ffc5a7;
+  margin-top:9px;
+  font-size:13px;
+}
+
+.login {
+  max-width:440px;
+  margin:45px auto;
+  padding:25px;
+  background:#30213e;
   border-radius:20px;
-  padding:8px 11px;
-  font-size:12px
 }
-.botmsg{background:#2e3c58}
-.botmsg.nova{background:#493044}
-.hint{
-  font-size:11px;
-  color:#d2c7db;
-  margin-top:7px
+
+.login h2 { margin-top:0; }
+
+.login input {
+  margin:7px 0 13px;
 }
+
+.login button {
+  background:#ad80e6;
+  width:100%;
+}
+
+footer {
+  text-align:center;
+  color:#c9b9d5;
+  padding:12px;
+  font-size:12px;
+}
+
+[hidden] { display:none !important; }
 </style>
 </head>
 
 <body>
-<main>
+
+<section id="loginView" class="login" hidden>
+  <h2>💜 Welkom bij Ons Clubhuis</h2>
+  <p>Voor Jeremy en Karina.</p>
+
+  <form id="loginForm">
+    <label>E-mailadres</label>
+    <input id="email" type="email"
+           autocomplete="username" required>
+
+    <label>Wachtwoord</label>
+    <input id="password" type="password"
+           autocomplete="current-password" required>
+
+    <button type="submit">Inloggen</button>
+  </form>
+
+  <div id="loginError" class="error"></div>
+</section>
+
+<section id="appView" hidden>
 
 <header>
-<button id="logout" hidden>Uitloggen</button>
-<h1>💜 Ons Clubhuis</h1>
-<small>Jeremy • Karina • Nova • Dex</small>
+  <div class="head">
+    <div>
+      <h1>💜 Ons Clubhuis</h1>
+      <div class="sub">
+        Jeremy • Karina • Nova • Dex
+      </div>
+    </div>
+    <button id="logout" class="logout">
+      Uitloggen
+    </button>
+  </div>
 </header>
 
-<section id="auth">
-<h2>Welkom terug 👋</h2>
-<p>Log in met je Clubhuis-account.</p>
+<section class="friends">
+  <h3>🤖 Onze AI-vrienden</h3>
 
-<input id="email" type="email"
-placeholder="E-mailadres"
-autocomplete="username">
+  <div class="botbuttons">
+    <button id="novaButton">💜 Nova</button>
+    <button id="dexButton">🤖 Dex</button>
+  </div>
 
-<input id="password" type="password"
-placeholder="Wachtwoord"
-autocomplete="current-password">
+  <div class="hint">
+    Nova en Dex praten regelmatig mee,
+    reageren op elkaar en beginnen soms
+    zelf een gesprek. 😂
+  </div>
 
-<button id="login">Inloggen</button>
+  <div class="status" id="aiStatus">
+    💜 Clubhuis wordt geladen...
+  </div>
 </section>
 
-<section id="chat">
+<div id="chat" class="chat"></div>
 
-<div id="bots">
-🤖 <strong>Onze AI-vrienden</strong>
+<div class="composer">
+  <form id="sendForm" class="sendrow">
+    <input
+      id="messageInput"
+      maxlength="2000"
+      placeholder="Typ een bericht..."
+      autocomplete="off"
+      required
+    >
+    <button
+      id="sendButton"
+      class="sendbutton"
+      type="submit">
+      Verstuur
+    </button>
+  </form>
 
-<div class="botbar">
-<button type="button"
-class="botpill" data-mention="@Nova ">
-💜 Nova
-</button>
-
-<button type="button"
-class="botpill" data-mention="@Dex ">
-🤖 Dex
-</button>
+  <div id="sendError" class="error"></div>
 </div>
-
-<div class="hint">
-Nova en Dex praten regelmatig mee
-en reageren soms op elkaar. 😂
-</div>
-</div>
-
-<div id="messages"></div>
-
-<form id="send">
-<input id="message" maxlength="2000"
-placeholder="Typ een bericht..." required>
-<button id="sendbutton">Verstuur</button>
-</form>
 
 </section>
-
-<div id="notice" role="status"></div>
-
-<footer>
-Alleen goedgekeurde leden kunnen
-berichten lezen en sturen.
-</footer>
-
-</main>
 
 <script type="module">
-import {createClient}
-from 'https://esm.sh/@supabase/supabase-js@2';
+import {
+  createClient
+} from "https://esm.sh/@supabase/supabase-js@2";
 
-const supabase=createClient(
-  'https://crfvjukxqkgmvfjqmhza.supabase.co',
-  'sb_publishable_CWrMrWdu4c4T6yJsspklSQ_FLg2y-f4'
-);
+const URL =
+  "https://crfvjukxqkgmvfjqmhza.supabase.co";
 
-const $=id=>document.getElementById(id);
+const KEY =
+  "sb_publishable_CWrMrWdu4c4T6yJsspklSQ_FLg2y-f4";
 
-let user=null;
-let timer=null;
-let sending=false;
-let lastRenderKey='';
+const supabase = createClient(URL, KEY);
 
-function note(s){
-  $('notice').textContent=s||'';
+const $ = id => document.getElementById(id);
+
+let user = null;
+let sending = false;
+let aiBusy = false;
+let lastRender = "";
+let pollTimer = null;
+let aiTimer = null;
+let lastAiRequest = 0;
+
+function showLogin() {
+  $("loginView").hidden = false;
+  $("appView").hidden = true;
 }
 
-function render(items){
-  const key=items.map(m=>m.id).join(',');
-  if(key===lastRenderKey)return;
-  lastRenderKey=key;
-
-  const pane=$('messages');
-  const atBottom=
-    pane.scrollHeight-
-    pane.scrollTop-
-    pane.clientHeight<110;
-
-  pane.replaceChildren();
-
-  for(const m of items){
-    const d=document.createElement('div');
-
-    d.className='msg'+(
-      m.bot_name
-        ?' botmsg '+m.bot_name
-        :(m.user_id===user.id?' mine':'')
-    );
-
-    const n=document.createElement('div');
-    n.className='name';
-
-    n.textContent=
-      m.bot_name==='nova'
-        ?'💜 Nova'
-        :m.bot_name==='dex'
-        ?'🤖 Dex'
-        :m.clubhuis_members?.display_name||'Lid';
-
-    const b=document.createElement('div');
-    b.textContent=m.message;
-
-    d.append(n,b);
-    pane.append(d);
-  }
-
-  if(atBottom||items.length<=10){
-    pane.scrollTop=pane.scrollHeight;
-  }
+function showApp() {
+  $("loginView").hidden = true;
+  $("appView").hidden = false;
 }
 
-async function load(){
-  if(!user)return;
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
 
-  const {data,error}=await supabase
-    .from('clubhuis_messages')
+function cleanBotText(text) {
+  return String(text || "")
+    .replace(/^(nova|dex)\s*:\s*/i, "")
+    .trim();
+}
+
+async function loadMessages() {
+  if (!user) return;
+
+  const { data, error } = await supabase
+    .from("clubhuis_messages")
     .select(
-      'id,user_id,message,bot_name,created_at,clubhuis_members(display_name)'
+      "id,user_id,message,bot_name,created_at,clubhuis_members(display_name)"
     )
-    .order('id',{ascending:false})
+    .order("id", { ascending:false })
     .limit(200);
 
-  if(error){
-    note('Berichten laden mislukt: '+error.message);
+  if (error) {
+    console.error("Chat laden:", error);
     return;
   }
 
-  render((data||[]).reverse());
-}
+  const items = (data || []).reverse();
+  const key = items.map(m => m.id).join(",");
 
-async function show(){
-  const {data:{user:u}}=
-    await supabase.auth.getUser();
+  if (key === lastRender) return;
+  lastRender = key;
 
-  user=u;
+  const chat = $("chat");
 
-  $('auth').style.display=u?'none':'block';
-  $('chat').style.display=u?'flex':'none';
-  $('logout').hidden=!u;
+  const nearBottom =
+    chat.scrollHeight - chat.scrollTop -
+    chat.clientHeight < 150;
 
-  clearInterval(timer);
-  lastRenderKey='';
+  chat.innerHTML = items.map(m => {
+    const isBot = !!m.bot_name;
+    const mine = !isBot && m.user_id === user.id;
 
-  if(u){
-    await load();
-    timer=setInterval(load,4000);
-  }else{
-    note('');
+    const name = isBot
+      ? m.bot_name === "nova"
+        ? "💜 Nova"
+        : "🤖 Dex"
+      : m.clubhuis_members?.display_name || "Lid";
+
+    const cls = isBot
+      ? m.bot_name
+      : mine ? "mine" : "human";
+
+    const content = isBot
+      ? cleanBotText(m.message)
+      : m.message;
+
+    return `
+      <div class="message ${cls}">
+        <div class="sender">${escapeHtml(name)}</div>
+        <div>${escapeHtml(content)}</div>
+      </div>
+    `;
+  }).join("");
+
+  if (nearBottom || items.length <= 10) {
+    chat.scrollTop = chat.scrollHeight;
   }
 }
 
-$('login').onclick=async()=>{
-  note('Inloggen...');
+async function aiTick(force = false) {
+  if (!user || aiBusy || document.hidden) return;
 
-  const {error}=
-    await supabase.auth.signInWithPassword({
-      email:$('email').value.trim(),
-      password:$('password').value
-    });
+  const now = Date.now();
 
-  if(error){
-    note(error.message);
-    return;
-  }
+  // Niet onnodig vaak de server aanroepen.
+  if (!force && now - lastAiRequest < 15000) return;
 
-  $('password').value='';
-  note('');
-  await show();
-};
+  lastAiRequest = now;
+  aiBusy = true;
 
-$('logout').onclick=async()=>{
-  await supabase.auth.signOut();
-  await show();
-};
-
-async function askAI(character,rootId,parentId){
-  const {data,error}=
-    await supabase.functions.invoke(
-      'dynamic-endpoint',
-      {
-        body:{
-          character,
-          message_id:rootId,
-          parent_id:parentId
-        }
-      }
-    );
-
-  if(error)throw error;
-  if(data?.error)throw new Error(data.error);
-
-  return data;
-}
-
-async function startConversation(messageId,msg){
-
-  const nova=/(^|\s)@nova\b/i.test(msg);
-  const dex=/(^|\s)@dex\b/i.test(msg);
-
-  // 90% kans op spontane AI-reactie.
-  if(!nova&&!dex&&Math.random()>=0.90){
-    return;
-  }
-
-  let character=nova
-    ?'nova'
-    :dex
-    ?'dex'
-    :Math.random()<0.5
-    ?'nova'
-    :'dex';
-
-  let parentId=messageId;
-
-  // Kans dat het gesprek doorgaat na
-  // respectievelijk 1, 2 en 3 AI-reacties.
-  const continueChance=[0.70,0.40,0.40];
-
-  for(let turn=0;turn<4;turn++){
-
-    let response;
-
-    try{
-      response=await askAI(
-        character,
-        messageId,
-        parentId
+  try {
+    const { data, error } =
+      await supabase.functions.invoke(
+        "dynamic-endpoint",
+        { body:{ action:"tick" } }
       );
-    }catch(error){
-      console.error('AI-reactie:',error);
-      note('Een AI-reactie is niet gelukt.');
-      break;
+
+    if (error) {
+      console.error("AI:", error);
+      $("aiStatus").textContent =
+        "🤖 AI tijdelijk niet beschikbaar";
+      return;
     }
 
-    if(!response?.id||response.skipped){
-      break;
+    if (data?.error) {
+      console.error("AI:", data.error);
+      $("aiStatus").textContent =
+        "🤖 AI tijdelijk niet beschikbaar";
+      return;
     }
 
-    await load();
+    if (data?.success) {
+      $("aiStatus").textContent =
+        data.character === "nova"
+          ? "💜 Nova heeft iets gezegd!"
+          : "🤖 Dex heeft iets gezegd!";
 
-    parentId=response.id;
-
-    if(
-      turn===3 ||
-      Math.random()>=continueChance[turn]
-    ){
-      break;
+      await loadMessages();
+    } else {
+      $("aiStatus").textContent =
+        "💜 Nova en Dex zijn erbij";
     }
-
-    character=character==='nova'?'dex':'nova';
+  } catch (error) {
+    console.error("AI-verzoek:", error);
+  } finally {
+    aiBusy = false;
   }
 }
 
-$('send').onsubmit=async e=>{
+function startTimers() {
+  stopTimers();
+
+  pollTimer = setInterval(() => {
+    if (!document.hidden) loadMessages();
+  }, 4000);
+
+  aiTimer = setInterval(() => {
+    aiTick();
+  }, 15000);
+}
+
+function stopTimers() {
+  if (pollTimer) clearInterval(pollTimer);
+  if (aiTimer) clearInterval(aiTimer);
+  pollTimer = null;
+  aiTimer = null;
+}
+
+async function initialize() {
+  const { data } = await supabase.auth.getUser();
+
+  if (!data.user) {
+    user = null;
+    showLogin();
+    return;
+  }
+
+  const { data: member, error } = await supabase
+    .from("clubhuis_members")
+    .select("display_name")
+    .eq("user_id", data.user.id)
+    .maybeSingle();
+
+  if (error || !member) {
+    await supabase.auth.signOut();
+    user = null;
+    $("loginError").textContent =
+      "Dit account is geen goedgekeurd lid.";
+    showLogin();
+    return;
+  }
+
+  user = data.user;
+  showApp();
+  await loadMessages();
+  startTimers();
+  aiTick(true);
+}
+
+$("loginForm").addEventListener("submit", async e => {
   e.preventDefault();
 
-  const msg=$('message').value.trim();
+  $("loginError").textContent = "";
 
-  if(!msg||!user||sending)return;
+  const email = $("email").value.trim();
+  const password = $("password").value;
 
-  sending=true;
-  $('sendbutton').disabled=true;
+  const { error } =
+    await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
 
-  try{
-    const {data,error}=await supabase
-      .from('clubhuis_messages')
+  if (error) {
+    $("loginError").textContent =
+      "Inloggen mislukt: " + error.message;
+    return;
+  }
+
+  $("password").value = "";
+  await initialize();
+});
+
+$("logout").addEventListener("click", async () => {
+  stopTimers();
+  await supabase.auth.signOut();
+  user = null;
+  lastRender = "";
+  showLogin();
+});
+
+function mention(name) {
+  const input = $("messageInput");
+
+  input.value =
+    (input.value.trim()
+      ? input.value.trim() + " "
+      : "") + "@" + name + " ";
+
+  input.focus();
+}
+
+$("novaButton").onclick = () => mention("Nova");
+$("dexButton").onclick = () => mention("Dex");
+
+$("sendForm").addEventListener("submit", async e => {
+  e.preventDefault();
+
+  if (!user || sending) return;
+
+  const message = $("messageInput").value.trim();
+  if (!message) return;
+
+  sending = true;
+  $("sendButton").disabled = true;
+  $("sendError").textContent = "";
+
+  try {
+    const { error } = await supabase
+      .from("clubhuis_messages")
       .insert({
         user_id:user.id,
-        message:msg
-      })
-      .select('id')
-      .single();
+        message
+      });
 
-    if(error)throw error;
+    if (error) throw error;
 
-    $('message').value='';
-    note('');
-    await load();
+    $("messageInput").value = "";
 
-    await startConversation(data.id,msg);
+    await loadMessages();
 
-  }catch(error){
-    note('Versturen mislukt: '+error.message);
-  }finally{
-    sending=false;
-    $('sendbutton').disabled=false;
+    // Laat Nova of Dex meteen kijken of
+    // er een reactie nodig is.
+    lastAiRequest = 0;
+    aiTick(true);
+  } catch (error) {
+    $("sendError").textContent =
+      "Versturen mislukt: " + error.message;
+  } finally {
+    sending = false;
+    $("sendButton").disabled = false;
   }
-};
+});
 
-document
-  .querySelectorAll('[data-mention]')
-  .forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      const input=$('message');
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && user) {
+    loadMessages();
+    aiTick(true);
+  }
+});
 
-      input.value+=(
-        input.value&&
-        !input.value.endsWith(' ')
-          ?' '
-          :''
-      )+btn.dataset.mention;
-
-      input.focus();
-    });
-  });
-
-await show();
+initialize();
 </script>
+
 </body>
 </html>
