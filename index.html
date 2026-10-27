@@ -5,10 +5,13 @@
 <meta charset="UTF-8">
 <meta name="viewport"
       content="width=device-width,initial-scale=1">
+
 <title>💜 Ons Clubhuis</title>
 
 <style>
-* { box-sizing:border-box; }
+* {
+  box-sizing:border-box;
+}
 
 body {
   margin:0;
@@ -180,7 +183,9 @@ input {
   border-radius:20px;
 }
 
-.login h2 { margin-top:0; }
+.login h2 {
+  margin-top:0;
+}
 
 .login input {
   margin:7px 0 13px;
@@ -191,14 +196,9 @@ input {
   width:100%;
 }
 
-footer {
-  text-align:center;
-  color:#c9b9d5;
-  padding:12px;
-  font-size:12px;
+[hidden] {
+  display:none !important;
 }
-
-[hidden] { display:none !important; }
 </style>
 </head>
 
@@ -210,12 +210,20 @@ footer {
 
   <form id="loginForm">
     <label>E-mailadres</label>
-    <input id="email" type="email"
-           autocomplete="username" required>
+    <input
+      id="email"
+      type="email"
+      autocomplete="username"
+      required
+    >
 
     <label>Wachtwoord</label>
-    <input id="password" type="password"
-           autocomplete="current-password" required>
+    <input
+      id="password"
+      type="password"
+      autocomplete="current-password"
+      required
+    >
 
     <button type="submit">Inloggen</button>
   </form>
@@ -233,6 +241,7 @@ footer {
         Jeremy • Karina • Nova • Dex
       </div>
     </div>
+
     <button id="logout" class="logout">
       Uitloggen
     </button>
@@ -248,13 +257,13 @@ footer {
   </div>
 
   <div class="hint">
-    Nova en Dex praten regelmatig mee,
-    reageren op elkaar en beginnen soms
-    zelf een gesprek. 😂
+    Nova en Dex praten gezellig mee, reageren
+    op jullie berichten en soms op elkaar.
+    Maximaal vier AI-berichten achter elkaar. 💜
   </div>
 
   <div class="status" id="aiStatus">
-    💜 Clubhuis wordt geladen...
+    💜 Nova en Dex zijn erbij
   </div>
 </section>
 
@@ -269,6 +278,7 @@ footer {
       autocomplete="off"
       required
     >
+
     <button
       id="sendButton"
       class="sendbutton"
@@ -394,28 +404,25 @@ async function aiTick(force = false) {
 
   const now = Date.now();
 
-  // Niet onnodig vaak de server aanroepen.
-  if (!force && now - lastAiRequest < 15000) return;
+  if (!force && now - lastAiRequest < 3000) {
+    return;
+  }
 
   lastAiRequest = now;
   aiBusy = true;
 
   try {
+    $("aiStatus").textContent =
+      "💜 Nova en Dex kijken even mee...";
+
     const { data, error } =
       await supabase.functions.invoke(
         "dynamic-endpoint",
-        { body:{ action:"tick" } }
+        { body: { action:"tick" } }
       );
 
-    if (error) {
-      console.error("AI:", error);
-      $("aiStatus").textContent =
-        "🤖 AI tijdelijk niet beschikbaar";
-      return;
-    }
-
-    if (data?.error) {
-      console.error("AI:", data.error);
+    if (error || data?.error) {
+      console.error("AI:", error || data.error);
       $("aiStatus").textContent =
         "🤖 AI tijdelijk niet beschikbaar";
       return;
@@ -424,18 +431,28 @@ async function aiTick(force = false) {
     if (data?.success) {
       $("aiStatus").textContent =
         data.character === "nova"
-          ? "💜 Nova heeft iets gezegd!"
-          : "🤖 Dex heeft iets gezegd!";
+          ? "💜 Nova heeft gereageerd"
+          : "🤖 Dex heeft gereageerd";
 
       await loadMessages();
+
+      // Meteen kijken of de andere AI ook
+      // aan de beurt is, zonder 15 seconden wachten.
+      lastAiRequest = 0;
+    } else if (
+      data?.skipped ===
+      "Maximaal vier AI-berichten achter elkaar"
+    ) {
+      $("aiStatus").textContent =
+        "💜 Nova en Dex wachten op jullie";
     } else {
       $("aiStatus").textContent =
-        data?.skipped === "Maximaal vier AI-berichten achter elkaar"
-          ? "💜 Nova en Dex wachten even op jullie"
-          : "💜 Nova en Dex zijn erbij";
+        "💜 Nova en Dex zijn erbij";
     }
   } catch (error) {
     console.error("AI-verzoek:", error);
+    $("aiStatus").textContent =
+      "🤖 AI tijdelijk niet beschikbaar";
   } finally {
     aiBusy = false;
   }
@@ -444,13 +461,15 @@ async function aiTick(force = false) {
 function startTimers() {
   stopTimers();
 
+  // Nieuwe berichten snel zichtbaar maken.
   pollTimer = setInterval(() => {
     if (!document.hidden) loadMessages();
-  }, 4000);
+  }, 3000);
 
+  // De server controleert of nog een reactie nodig is.
   aiTimer = setInterval(() => {
     aiTick();
-  }, 15000);
+  }, 3000);
 }
 
 function stopTimers() {
@@ -486,42 +505,50 @@ async function initialize() {
 
   user = data.user;
   showApp();
+
   await loadMessages();
   startTimers();
   aiTick(true);
 }
 
-$("loginForm").addEventListener("submit", async e => {
-  e.preventDefault();
+$("loginForm").addEventListener(
+  "submit",
+  async e => {
+    e.preventDefault();
 
-  $("loginError").textContent = "";
+    $("loginError").textContent = "";
 
-  const email = $("email").value.trim();
-  const password = $("password").value;
+    const email = $("email").value.trim();
+    const password = $("password").value;
 
-  const { error } =
-    await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
+    const { error } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
 
-  if (error) {
-    $("loginError").textContent =
-      "Inloggen mislukt: " + error.message;
-    return;
+    if (error) {
+      $("loginError").textContent =
+        "Inloggen mislukt: " + error.message;
+      return;
+    }
+
+    $("password").value = "";
+    await initialize();
   }
+);
 
-  $("password").value = "";
-  await initialize();
-});
+$("logout").addEventListener(
+  "click",
+  async () => {
+    stopTimers();
+    await supabase.auth.signOut();
 
-$("logout").addEventListener("click", async () => {
-  stopTimers();
-  await supabase.auth.signOut();
-  user = null;
-  lastRender = "";
-  showLogin();
-});
+    user = null;
+    lastRender = "";
+    showLogin();
+  }
+);
 
 function mention(name) {
   const input = $("messageInput");
@@ -537,51 +564,57 @@ function mention(name) {
 $("novaButton").onclick = () => mention("Nova");
 $("dexButton").onclick = () => mention("Dex");
 
-$("sendForm").addEventListener("submit", async e => {
-  e.preventDefault();
+$("sendForm").addEventListener(
+  "submit",
+  async e => {
+    e.preventDefault();
 
-  if (!user || sending) return;
+    if (!user || sending) return;
 
-  const message = $("messageInput").value.trim();
-  if (!message) return;
+    const message = $("messageInput").value.trim();
+    if (!message) return;
 
-  sending = true;
-  $("sendButton").disabled = true;
-  $("sendError").textContent = "";
+    sending = true;
+    $("sendButton").disabled = true;
+    $("sendError").textContent = "";
 
-  try {
-    const { error } = await supabase
-      .from("clubhuis_messages")
-      .insert({
-        user_id:user.id,
-        message
-      });
+    try {
+      const { error } = await supabase
+        .from("clubhuis_messages")
+        .insert({
+          user_id:user.id,
+          message
+        });
 
-    if (error) throw error;
+      if (error) throw error;
 
-    $("messageInput").value = "";
+      $("messageInput").value = "";
 
-    await loadMessages();
+      await loadMessages();
 
-    // Laat Nova of Dex meteen kijken of
-    // er een reactie nodig is.
-    lastAiRequest = 0;
-    aiTick(true);
-  } catch (error) {
-    $("sendError").textContent =
-      "Versturen mislukt: " + error.message;
-  } finally {
-    sending = false;
-    $("sendButton").disabled = false;
+      // Direct na het verzenden AI inschakelen.
+      lastAiRequest = 0;
+      aiTick(true);
+    } catch (error) {
+      $("sendError").textContent =
+        "Versturen mislukt: " + error.message;
+    } finally {
+      sending = false;
+      $("sendButton").disabled = false;
+    }
   }
-});
+);
 
-document.addEventListener("visibilitychange", () => {
-  if (!document.hidden && user) {
-    loadMessages();
-    aiTick(true);
+document.addEventListener(
+  "visibilitychange",
+  () => {
+    if (!document.hidden && user) {
+      loadMessages();
+      lastAiRequest = 0;
+      aiTick(true);
+    }
   }
-});
+);
 
 initialize();
 </script>
