@@ -1,0 +1,16 @@
+{
+  "name": "Ons Clubhuis",
+  "short_name": "Clubhuis",
+  "description": "De privéchat van Jeremy, Karina, Nova en Dex",
+  "id": "/Ons-Clubhuis/",
+  "start_url": "/Ons-Clubhuis/?source=pwa",
+  "scope": "/Ons-Clubhuis/",
+  "display": "standalone",
+  "background_color": "#14101e",
+  "theme_color": "#30213e",
+  "lang": "nl",
+  "icons": [
+    {"src":"icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+  ]
+}
