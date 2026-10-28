@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#30213e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icons/icon-192.png">
+<title>💜 Ons Clubhuis</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#14101e;color:#f8f2ff;font-family:Arial,sans-serif}
+button{cursor:pointer;border:0;border-radius:13px;padding:12px 15px;font-size:15px;font-weight:bold}
+button:disabled{opacity:.55;cursor:default}
+header{background:#30213e;padding:16px}
+.head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{font-size:25px;margin:0 0 5px}
+.sub{color:#cfc0dc;font-size:13px}
+.headerbuttons{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.logout,.settingsbtn,.adminbtn{background:#e9e6e9;color:#21172d}
+.adminbtn{background:#ad80e6}
+.friends{padding:12px 16px;background:#24192f}
+.friends h3{margin:0 0 10px;font-size:16px;color:#d9c6e8}
+.botbuttons{display:flex;gap:9px}
+.botbuttons button{border:1px solid #80609a;border-radius:30px;color:white;background:#4b3564}
+.hint{color:#d3c4dd;font-size:12px;line-height:1.4;margin-top:8px}
+.status{color:#c6a8f1;font-size:12px;margin-top:7px}
+.chat{padding:14px 14px 145px;height:calc(100dvh - 235px);min-height:220px;overflow-y:auto}
+.message{max-width:85%;width:fit-content;padding:12px 14px;border-radius:19px;margin-bottom:11px;overflow-wrap:anywhere;line-height:1.4;font-size:16px;white-space:pre-wrap}
+.message.mine{margin-left:auto;background:#68458b}
+.message.human{background:#393043}
+.message.nova{background:#503347}
+.message.dex{background:#30405e}
+.sender{color:#dbc8e8;font-size:12px;margin-bottom:5px}
+.composer{position:fixed;left:0;right:0;bottom:0;background:#30213e;padding:12px 12px max(12px,env(safe-area-inset-bottom));z-index:5}
+.sendrow{display:flex;gap:8px}
+input{width:100%;border:0;border-radius:12px;padding:13px;font-size:16px;outline:none}
+.sendbutton,.primary{background:#ad80e6;color:#1d102a}
+.error{color:#ffc5a7;margin-top:9px;font-size:13px}
+.login{max-width:440px;margin:45px auto;padding:25px;background:#30213e;border-radius:20px}
+.login h2{margin-top:0}
+.login input{margin:7px 0 13px}
+.login button{width:100%}
+.panel{margin:10px 16px;padding:16px;border:1px solid #80609a;background:#24192f;border-radius:16px}
+.panel h2{font-size:19px;margin:0 0 12px}
+.panel p{font-size:14px;line-height:1.5}
+.panel label{display:flex;gap:9px;align-items:center;margin:12px 0}
+.panel input[type=checkbox]{width:auto}
+.panel button{margin:5px 5px 5px 0}
+.muted{color:#cfc0dc;font-size:12px}
+.admin-section{border-top:1px solid #654d7a;padding-top:14px;margin-top:16px}
+.admin-section h3{font-size:16px;margin:0 0 10px}
+.admin-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #44334f}
+.admin-row label{margin:0;flex:1}
+.admin-row input[type=number]{width:85px;padding:9px}
+.admin-status{font-size:13px;color:#d8c0f5;margin:12px 0;line-height:1.5}
+.memory-list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.memory-item{background:#382943;border-radius:12px;padding:12px}
+.memory-text{font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+.memory-meta{font-size:11px;color:#c5b5d2;margin-top:7px}
+.memory-actions{margin-top:8px}
+.memory-actions button{font-size:12px;padding:8px 11px;background:#70405a;color:white}
+.admin-note{font-size:12px;color:#cfc0dc;line-height:1.5}
+[hidden]{display:none!important}
+@media(max-width:390px){
+h1{font-size:21px}
+.head button{font-size:12px;padding:9px}
+.chat{height:calc(100dvh - 240px)}
+}
+</style>
+</head>
+<body>
+
+<section id="loginView" class="login" hidden>
+<h2>💜 Welkom bij Ons Clubhuis</h2>
+<p>Voor Jeremy en Karina.</p>
+<form id="loginForm">
+<label for="email">E-mailadres</label>
+<input id="email" type="email" autocomplete="username" required>
+<label for="password">Wachtwoord</label>
+<input id="password" type="password" autocomplete="current-password" required>
+<button class="primary" type="submit">Inloggen</button>
+</form>
+<div id="loginError" class="error"></div>
+</section>
+
+<section id="appView" hidden>
+<header>
+<div class="head">
+<div>
+<h1>💜 Ons Clubhuis</h1>
+<div class="sub">Jeremy • Karina • Nova • Dex</div>
+</div>
+<div class="headerbuttons">
+<button id="adminButton" class="adminbtn" type="button" hidden>⚙️ Beheer</button>
+<button id="settingsButton" class="settingsbtn" type="button">🔔 Meldingen</button>
+<button id="logout" class="logout" type="button">Uitloggen</button>
+</div>
+</div>
+</header>
+
+<section id="settingsPanel" class="panel" hidden>
+<h2>🔔 Meldingen en installatie</h2>
+<p>Installeer Ons Clubhuis op je beginscherm en zet daarna pushmeldingen aan. De browser vraagt eerst je toestemming.</p>
+<button id="installButton" class="primary" type="button" hidden>📲 App installeren</button>
+<button id="enablePush" class="primary" type="button">Meldingen inschakelen</button>
+<button id="disablePush" type="button">Meldingen uitschakelen</button>
+<label><input id="notifyHumans" type="checkbox" checked> Berichten van Jeremy en Karina</label>
+<label><input id="notifyBots" type="checkbox" checked> Berichten van Nova en Dex</label>
+<p class="muted" id="pushStatus">Nog niet ingesteld</p>
+</section>
+
+<section id="adminPanel" class="panel" hidden>
+<h2>⚙️ Beheercentrum</h2>
+<p>Beheer de instellingen en het gezamenlijke geheugen van Nova en Dex.</p>
+<div id="adminStatus" class="admin-status"></div>
+
+<div class="admin-section">
+<h3>🤖 AI-instellingen</h3>
+<div class="admin-row"><label for="settingNova">💜 Nova ingeschakeld</label><input id="settingNova" type="checkbox"></div>
+<div class="admin-row"><label for="settingDex">🤖 Dex ingeschakeld</label><input id="settingDex" type="checkbox"></div>
+<div class="admin-row"><label for="settingWelcome">👋 Welkomstberichten</label><input id="settingWelcome" type="checkbox"></div>
+<div class="admin-row"><label for="settingWelcomeHours">Begroeten na aantal uren</label><input id="settingWelcomeHours" type="number" min="1" max="168" value="12"></div>
+<div class="admin-row"><label for="settingInitiatives">💬 Spontane gesprekken</label><input id="settingInitiatives" type="checkbox"></div>
+<div class="admin-row"><label for="settingMaxInitiatives">Maximaal per dag</label><input id="settingMaxInitiatives" type="number" min="0" max="24" value="3"></div>
+<button id="saveAdminSettings" class="primary" type="button">💾 Instellingen opslaan</button>
+<p class="admin-note">De instellingen worden opgeslagen in Supabase. De AI-functies moeten nog aan deze instellingen worden gekoppeld voordat ze het gedrag daadwerkelijk veranderen.</p>
+</div>
+
+<div class="admin-section">
+<h3>🧠 Gezamenlijk geheugen</h3>
+<p>Hier zie je welke herinneringen Nova en Dex samen hebben opgeslagen.</p>
+<button id="refreshMemories" type="button">🔄 Geheugen vernieuwen</button>
+<div id="memoryStatus" class="admin-status"></div>
+<div id="memoryList" class="memory-list"></div>
+</div>
+</section>
+
+<section class="friends">
+<h3>🤖 Onze AI-vrienden</h3>
+<div class="botbuttons">
+<button id="novaButton" type="button">💜 Nova</button>
+<button id="dexButton" type="button">🤖 Dex</button>
+</div>
+<div class="hint">Nova en Dex reageren allebei op jullie berichten, ieder op hun eigen manier.</div>
+<div class="status" id="aiStatus">💜 Nova en Dex zijn erbij</div>
+</section>
+
+<div id="chat" class="chat" role="log" aria-label="Clubhuis berichten"></div>
+
+<div class="composer">
+<form id="sendForm" class="sendrow">
+<input id="messageInput" maxlength="2000" placeholder="Typ een bericht..." autocomplete="off" required aria-label="Bericht">
+<button id="sendButton" class="sendbutton" type="submit">Verstuur</button>
+</form>
+<div id="sendError" class="error"></div>
+</div>
+</section>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { VAPID_PUBLIC_KEY } from './push-config.js';
+
+const URL='https://crfvjukxqkgmvfjqmhza.supabase.co';
+const KEY='sb_publishable_CWrMrWdu4c4T6yJsspklSQ_FLg2y-f4';
+const supabase=createClient(URL,KEY);
+const $=id=>document.getElementById(id);
+
+let user=null,sending=false,aiBusy=false,lastRender='',pollTimer=null,aiTimer=null,lastAiRequest=0,installPrompt=null;
+let isAdmin=false;
+let adminSettings={};
+let memoryItems=[];
+
+const escapeHtml=value=>String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
+const cleanBotText=text=>String(text||'').replace(/^(nova|dex)\s*:\s*/i,'').trim();
+
+function showLogin(){
+$('loginView').hidden=false;
+$('appView').hidden=true;
+$('adminPanel').hidden=true;
+$('adminButton').hidden=true;
+isAdmin=false;
+}
+
+function showApp(){
+$('loginView').hidden=true;
+$('appView').hidden=false;
+}
+
+if('serviceWorker' in navigator){
+window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(console.error));
+}
+
+window.addEventListener('beforeinstallprompt',e=>{
+e.preventDefault();
+installPrompt=e;
+$('installButton').hidden=false;
+});
+
+$('installButton').onclick=async()=>{
+if(!installPrompt)return;
+await installPrompt.prompt();
+installPrompt=null;
+$('installButton').hidden=true;
+};
+
+$('settingsButton').onclick=()=>{
+$('settingsPanel').hidden=!$('settingsPanel').hidden;
+if(!$('settingsPanel').hidden)refreshPushStatus();
+};
+
+function base64ToUint8Array(value){
+const padding='='.repeat((4-value.length%4)%4);
+const raw=atob((value+padding).replace(/-/g,'+').replace(/_/g,'/'));
+return Uint8Array.from(raw,c=>c.charCodeAt(0));
+}
+
+async function getSubscription(){
+if(!('serviceWorker' in navigator)||!('PushManager' in window))
+throw Error('Pushmeldingen worden niet ondersteund door deze browser.');
+const registration=await navigator.serviceWorker.ready;
+return {registration,subscription:await registration.pushManager.getSubscription()};
+}
+
+async function refreshPushStatus(){
+try{
+const {subscription}=await getSubscription();
+$('pushStatus').textContent=subscription?'Push is ingeschakeld op dit toestel.':'Push staat uit op dit toestel.';
+if(subscription&&user){
+const {data}=await supabase.from('clubhuis_push_subscriptions')
+.select('notify_humans,notify_bots')
+.eq('endpoint',subscription.endpoint)
+.maybeSingle();
+if(data){
+$('notifyHumans').checked=data.notify_humans;
+$('notifyBots').checked=data.notify_bots;
+}
+}
+}catch(e){$('pushStatus').textContent=e.message;}
+}
+
+async function savePush(){
+if(!user)throw Error('Log eerst in.');
+const {registration,subscription:existing}=await getSubscription();
+if(Notification.permission==='denied')throw Error('Meldingen zijn geblokkeerd in je Android/browserinstellingen.');
+const permission=await Notification.requestPermission();
+if(permission!=='granted')throw Error('Geen toestemming voor meldingen.');
+const subscription=existing||await registration.pushManager.subscribe({
+userVisibleOnly:true,
+applicationServerKey:base64ToUint8Array(VAPID_PUBLIC_KEY)
+});
+const {error}=await supabase.from('clubhuis_push_subscriptions').upsert({
+user_id:user.id,
+endpoint:subscription.endpoint,
+subscription:subscription.toJSON(),
+notify_humans:$('notifyHumans').checked,
+notify_bots:$('notifyBots').checked
+},{onConflict:'endpoint'});
+if(error)throw error;
+$('pushStatus').textContent='Pushmeldingen zijn actief!';
+}
+
+$('enablePush').onclick=async()=>{
+try{
+$('pushStatus').textContent='Meldingen worden ingesteld...';
+await savePush();
+}catch(e){$('pushStatus').textContent='Niet gelukt: '+e.message;}
+};
+
+$('disablePush').onclick=async()=>{
+try{
+const {subscription}=await getSubscription();
+if(subscription){
+const {error}=await supabase.from('clubhuis_push_subscriptions').delete().eq('endpoint',subscription.endpoint);
+if(error)throw error;
+await subscription.unsubscribe();
+}
+$('pushStatus').textContent='Pushmeldingen staan uit.';
+}catch(e){$('pushStatus').textContent='Uitschakelen mislukt: '+e.message;}
+};
+
+for(const id of ['notifyHumans','notifyBots']){
+$(id).addEventListener('change',async()=>{
+try{
+const {subscription}=await getSubscription();
+if(subscription&&user){
+const {error}=await supabase.from('clubhuis_push_subscriptions').update({
+notify_humans:$('notifyHumans').checked,
+notify_bots:$('notifyBots').checked
+}).eq('endpoint',subscription.endpoint);
+if(error)throw error;
+}
+}catch(e){$('pushStatus').textContent=e.message;}
+});
+}
+
+// BEHEERDER CONTROLEREN
+
+async function checkAdmin(){
+isAdmin=false;
+$('adminButton').hidden=true;
+$('adminPanel').hidden=true;
+
+if(!user)return;
+
+try{
+const {data,error}=await supabase
+.from('clubhuis_admins')
+.select('user_id')
+.eq('user_id',user.id)
+.maybeSingle();
+
+if(error)throw error;
+
+isAdmin=!!data;
+$('adminButton').hidden=!isAdmin;
+
+}catch(error){
+console.error('Beheerder controleren:',error);
+}
+}
+
+// BEHEERPANEEL OPENEN
+
+$('adminButton').onclick=async()=>{
+if(!isAdmin)return;
+
+$('adminPanel').hidden=!$('adminPanel').hidden;
+
+if(!$('adminPanel').hidden){
+$('settingsPanel').hidden=true;
+$('adminStatus').textContent='Beheercentrum laden...';
+await Promise.all([
+loadAdminSettings(),
+loadMemories()
+]);
+$('adminPanel').scrollIntoView({behavior:'smooth',block:'start'});
+}
+};
+
+// INSTELLINGEN LADEN
+
+async function loadAdminSettings(){
+if(!isAdmin)return;
+
+try{
+const {data,error}=await supabase
+.from('clubhuis_ai_settings')
+.select('setting_key,setting_value');
+
+if(error)throw error;
+
+adminSettings={};
+
+for(const row of data||[]){
+adminSettings[row.setting_key]=row.setting_value;
+}
+
+$('settingNova').checked=adminSettings.nova_enabled===true;
+$('settingDex').checked=adminSettings.dex_enabled===true;
+$('settingWelcome').checked=adminSettings.welcome_enabled===true;
+$('settingWelcomeHours').value=adminSettings.welcome_after_hours??12;
+$('settingInitiatives').checked=adminSettings.initiatives_enabled===true;
+$('settingMaxInitiatives').value=adminSettings.max_initiatives_per_day??3;
+
+$('adminStatus').textContent='Instellingen geladen.';
+
+}catch(error){
+$('adminStatus').textContent='Instellingen laden mislukt: '+error.message;
+}
+}
+
+// INSTELLINGEN OPSLAAN
+
+$('saveAdminSettings').onclick=async()=>{
+if(!isAdmin)return;
+
+const button=$('saveAdminSettings');
+button.disabled=true;
+$('adminStatus').textContent='Instellingen opslaan...';
+
+try{
+const hours=Number($('settingWelcomeHours').value);
+const maximum=Number($('settingMaxInitiatives').value);
+
+if(!Number.isInteger(hours)||hours<1||hours>168)
+throw Error('Het aantal uren moet tussen 1 en 168 liggen.');
+
+if(!Number.isInteger(maximum)||maximum<0||maximum>24)
+throw Error('Het maximum per dag moet tussen 0 en 24 liggen.');
+
+const settings=[
+['nova_enabled',$('settingNova').checked],
+['dex_enabled',$('settingDex').checked],
+['welcome_enabled',$('settingWelcome').checked],
+['welcome_after_hours',hours],
+['initiatives_enabled',$('settingInitiatives').checked],
+['max_initiatives_per_day',maximum]
+];
+
+for(const [key,value] of settings){
+const {data,error}=await supabase
+.from('clubhuis_ai_settings')
+.update({
+setting_value:value,
+updated_at:new Date().toISOString()
+})
+.eq('setting_key',key)
+.select('setting_key');
+
+if(error)throw error;
+if(!data?.length)throw Error('Instelling niet opgeslagen: '+key);
+}
+
+$('adminStatus').textContent='✅ Alle instellingen opgeslagen!';
+await loadAdminSettings();
+
+}catch(error){
+$('adminStatus').textContent='❌ Opslaan mislukt: '+error.message;
+}finally{
+button.disabled=false;
+}
+};
+
+// GEHEUGEN LADEN
+
+async function loadMemories(){
+if(!isAdmin)return;
+
+$('memoryStatus').textContent='Herinneringen ophalen...';
+$('memoryList').replaceChildren();
+
+try{
+const {data,error}=await supabase
+.from('clubhuis_shared_memory')
+.select('id,memory_text,category,created_at')
+.order('created_at',{ascending:false})
+.limit(200);
+
+if(error)throw error;
+
+memoryItems=data||[];
+renderMemories();
+
+$('memoryStatus').textContent=
+memoryItems.length+' herinnering(en) gevonden.';
+
+}catch(error){
+$('memoryStatus').textContent=
+'Geheugen laden mislukt: '+error.message+
+' — mogelijk moeten de beheerdersrechten voor het geheugen nog worden ingesteld.';
+}
+}
+
+function renderMemories(){
+const list=$('memoryList');
+list.replaceChildren();
+
+if(!memoryItems.length){
+const empty=document.createElement('p');
+empty.className='muted';
+empty.textContent='Er zijn nog geen herinneringen opgeslagen.';
+list.appendChild(empty);
+return;
+}
+
+for(const memory of memoryItems){
+const item=document.createElement('div');
+item.className='memory-item';
+
+const content=document.createElement('div');
+content.className='memory-text';
+content.textContent=memory.memory_text||'';
+
+const meta=document.createElement('div');
+meta.className='memory-meta';
+meta.textContent=(memory.category||'Algemeen')+' • '+
+new Date(memory.created_at).toLocaleString('nl-NL');
+
+const actions=document.createElement('div');
+actions.className='memory-actions';
+
+const deleteButton=document.createElement('button');
+deleteButton.type='button';
+deleteButton.textContent='🗑️ Verwijderen';
+deleteButton.onclick=()=>deleteMemory(memory.id);
+
+actions.appendChild(deleteButton);
+item.appendChild(content);
+item.appendChild(meta);
+item.appendChild(actions);
+list.appendChild(item);
+}
+}
+
+// GEHEUGEN VERWIJDEREN
+
+async function deleteMemory(id){
+if(!isAdmin)return;
+
+const memory=memoryItems.find(m=>m.id===id);
+if(!memory)return;
+
+if(!confirm('Weet je zeker dat je deze herinnering wilt verwijderen?\n\n'+memory.memory_text))return;
+
+try{
+const {data,error}=await supabase
+.from('clubhuis_shared_memory')
+.delete()
+.eq('id',id)
+.select('id');
+
+if(error)throw error;
+if(!data?.length)throw Error('De herinnering kon niet worden verwijderd.');
+
+$('memoryStatus').textContent='✅ Herinnering verwijderd.';
+await loadMemories();
+
+}catch(error){
+$('memoryStatus').textContent='❌ Verwijderen mislukt: '+error.message;
+}
+}
+
+$('refreshMemories').onclick=loadMemories;
+
+// BESTAANDE CHAT
+
+async function loadMessages(){
+if(!user)return;
+
+const {data,error}=await supabase
+.from('clubhuis_messages')
+.select('id,user_id,message,bot_name,created_at,clubhuis_members(display_name)')
+.order('id',{ascending:false})
+.limit(200);
+
+if(error){
+console.error('Chat laden:',error);
+return;
+}
+
+const items=(data||[]).reverse();
+const key=items.map(m=>m.id).join(',');
+
+if(key===lastRender)return;
+lastRender=key;
+
+const chat=$('chat');
+const nearBottom=chat.scrollHeight-chat.scrollTop-chat.clientHeight<150;
+
+chat.innerHTML=items.map(m=>{
+const isBot=!!m.bot_name;
+const mine=!isBot&&m.user_id===user.id;
+const name=isBot?(m.bot_name==='nova'?'💜 Nova':'🤖 Dex'):(m.clubhuis_members?.display_name||'Lid');
+const cls=isBot?m.bot_name:(mine?'mine':'human');
+const content=isBot?cleanBotText(m.message):m.message;
+
+return `<div class="message ${cls}">
+<div class="sender">${escapeHtml(name)}</div>
+<div>${escapeHtml(content)}</div>
+</div>`;
+}).join('');
+
+if(nearBottom||items.length<=10)
+chat.scrollTop=chat.scrollHeight;
+}
+
+async function aiTick(force=false){
+if(!user||aiBusy||document.hidden)return;
+
+const now=Date.now();
+if(!force&&now-lastAiRequest<3000)return;
+
+lastAiRequest=now;
+aiBusy=true;
+
+try{
+$('aiStatus').textContent='💜 Nova en Dex kijken even mee...';
+
+const {data,error}=await supabase.functions.invoke('dynamic-endpoint',{
+body:{action:'tick'}
+});
+
+if(error||data?.error){
+console.error('AI:',error||data?.error);
+$('aiStatus').textContent='🤖 AI tijdelijk niet beschikbaar';
+return;
+}
+
+if(data?.success){
+$('aiStatus').textContent=
+data.character==='nova'?'💜 Nova heeft gereageerd':'🤖 Dex heeft gereageerd';
+await loadMessages();
+lastAiRequest=0;
+}else{
+$('aiStatus').textContent='💜 Nova en Dex zijn erbij';
+}
+
+}catch(error){
+console.error('AI:',error);
+$('aiStatus').textContent='🤖 AI tijdelijk niet beschikbaar';
+}finally{
+aiBusy=false;
+}
+}
+
+function stopTimers(){
+if(pollTimer)clearInterval(pollTimer);
+if(aiTimer)clearInterval(aiTimer);
+pollTimer=null;
+aiTimer=null;
+}
+
+function startTimers(){
+stopTimers();
+pollTimer=setInterval(()=>{
+if(!document.hidden)loadMessages();
+},3000);
+aiTimer=setInterval(()=>aiTick(),3000);
+}
+
+async function initialize(){
+const {data}=await supabase.auth.getUser();
+
+if(!data.user){
+user=null;
+stopTimers();
+showLogin();
+return;
+}
+
+const {data:member,error}=await supabase
+.from('clubhuis_members')
+.select('display_name')
+.eq('user_id',data.user.id)
+.maybeSingle();
+
+if(error||!member){
+await supabase.auth.signOut();
+user=null;
+$('loginError').textContent='Dit account is geen goedgekeurd lid.';
+showLogin();
+return;
+}
+
+user=data.user;
+showApp();
+lastRender='';
+
+await checkAdmin();
+await loadMessages();
+startTimers();
+aiTick(true);
+}
+
+$('loginForm').addEventListener('submit',async e=>{
+e.preventDefault();
+$('loginError').textContent='';
+
+const {error}=await supabase.auth.signInWithPassword({
+email:$('email').value.trim(),
+password:$('password').value
+});
+
+if(error){
+$('loginError').textContent='Inloggen mislukt: '+error.message;
+return;
+}
+
+$('password').value='';
+await initialize();
+});
+
+$('logout').onclick=async()=>{
+stopTimers();
+await supabase.auth.signOut();
+user=null;
+lastRender='';
+isAdmin=false;
+$('adminButton').hidden=true;
+$('adminPanel').hidden=true;
+showLogin();
+};
+
+function mention(name){
+const input=$('messageInput');
+input.value=(input.value.trim()?input.value.trim()+' ':'')+'@'+name+' ';
+input.focus();
+}
+
+$('novaButton').onclick=()=>mention('Nova');
+$('dexButton').onclick=()=>mention('Dex');
+
+$('sendForm').addEventListener('submit',async e=>{
+e.preventDefault();
+
+if(!user||sending)return;
+
+const message=$('messageInput').value.trim();
+if(!message)return;
+
+sending=true;
+$('sendButton').disabled=true;
+$('sendError').textContent='';
+
+try{
+const {error}=await supabase
+.from('clubhuis_messages')
+.insert({user_id:user.id,message});
+
+if(error)throw error;
+
+$('messageInput').value='';
+await loadMessages();
+lastAiRequest=0;
+aiTick(true);
+
+}catch(error){
+$('sendError').textContent='Versturen mislukt: '+error.message;
+}finally{
+sending=false;
+$('sendButton').disabled=false;
+}
+});
+
+document.addEventListener('visibilitychange',()=>{
+if(!document.hidden&&user){
+loadMessages();
+lastAiRequest=0;
+aiTick(true);
+}
+});
+
+initialize();
+</script>
+</body>
+  </html>
